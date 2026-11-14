@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IXL Games</title>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600&family=Syne:wght@700;800&display=swap" />
+  <style>
+    :root { color-scheme: dark; }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; height: 100%; background: #050505; color: #f4f4f5; font-family: Outfit, system-ui, sans-serif; }
+    button { cursor: pointer; font: inherit; color: inherit; }
+    h1 { font-family: Syne, system-ui, sans-serif; letter-spacing: 0.08em; animation: glow 2.4s ease-in-out infinite; }
+    @keyframes glow {
+      50% { letter-spacing: 0.16em; text-shadow: 0 0 28px rgba(245,197,24,.7); }
+    }
+    .splash, .hub { min-height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+    .gold { color: #f5c518; letter-spacing: .35em; text-transform: uppercase; font-size: 12px; }
+    .muted { color: #a1a1aa; max-width: 28rem; }
+    .bar { margin-top: 40px; height: 4px; width: 220px; background: #1e1e1e; border-radius: 99px; overflow: hidden; }
+    .bar > div { height: 100%; background: #f5c518; transform-origin: left; animation: fill 5s linear forwards; }
+    @keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    .grid { display: grid; gap: 12px; width: min(720px, 100%); margin-top: 28px; }
+    @media (min-width: 640px) { .grid { grid-template-columns: 1fr 1fr; } .wide { grid-column: 1 / -1; } }
+    .tile, .game-btn, .back, .send { border: 1px solid #2a2a2a; background: #141414; border-radius: 16px; min-height: 56px; }
+    .tile { text-align: left; padding: 16px 20px; }
+    .tile:hover, .game-btn:hover { border-color: #f5c518; }
+    .tile b { display: block; font-family: Syne, sans-serif; font-size: 20px; }
+    .tile span { color: #a1a1aa; font-size: 14px; }
+    .room { height: 100%; display: flex; flex-direction: column; }
+    .top { display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #2a2a2a; padding: 8px 12px; }
+    .back { padding: 0 14px; }
+    .frame { flex: 1; border: 0; width: 100%; background: #050505; }
+    .list { overflow: auto; padding: 16px; display: flex; flex-direction: column; gap: 8px; max-width: 520px; margin: 0 auto; width: 100%; }
+    .game-btn { text-align: left; padding: 0 20px; font-family: Syne, sans-serif; font-size: 20px; }
+    .row { display: flex; gap: 8px; padding: 12px; border-bottom: 1px solid #2a2a2a; }
+    input { flex: 1; min-height: 44px; border-radius: 12px; border: 1px solid #2a2a2a; background: #141414; color: #f4f4f5; padding: 0 12px; }
+    .send { background: #f5c518; color: #050505; font-weight: 700; padding: 0 16px; }
+    .calc { max-width: 360px; margin: auto; padding: 16px; width: 100%; }
+    .screen { background: #141414; border: 1px solid #2a2a2a; border-radius: 16px; text-align: right; font-size: 36px; padding: 18px; font-family: Syne, sans-serif; margin-bottom: 12px; overflow: hidden; }
+    .keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .keys button { min-height: 56px; border-radius: 12px; border: 0; background: #141414; font-size: 18px; font-weight: 600; }
+    .keys .op { background: #f5c518; color: #050505; }
+    .note { padding: 24px; color: #a1a1aa; }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    const FACTS = [
+      "Octopuses have three hearts, and two of them stop when they swim.",
+      "A day on Venus is longer than a year on Venus.",
+      "Honey never spoils. Archaeologists have eaten 3,000-year-old honey.",
+      "Bananas are berries. Strawberries are not.",
+      "The first video game was created in 1958: Tennis for Two."
+    ];
+    const GAMES = [
+      ["Basket Hoop", "https://d11jzht7mj96rr.cloudfront.net/games/2024/construct/311/basket-hoop/index-gg.html", "fullscreen"],
+      ["Halloween Pac-Man", "https://searchplayground.google/pacman/halloween/", "web-share"],
+      ["Granny", "https://app-611144.games.s3.yandex.net/611144/0ila6noialuudahd819fs5ijel7z90n6/index.html?clid=14408047&sdk=%2Fsdk%2F_%2Fv2.2f14a50521d68e9766e1.js#origin=https%3A%2F%2Fplayhop.com&app-id=611144&device-type=desktop", "accelerometer; gyroscope"],
+      ["Minecraft", "/games/2026/more/duckcraft-12/index.html", "fullscreen"],
+      ["Subway Surfers", "https://classroom-6x.io/games/subway-surfers/", "fullscreen"],
+      ["Ultimate Car Driving", "https://classroom-6x.io/games/ultimate-car-driving/", "fullscreen"],
+      ["Block Blast", "https://gamezipper.com/block-blast/?utm_source=embed", "autoplay; fullscreen; gamepad"],
+      ["Cookie Clicker", "https://gamezipper.com/cookie-clicker/?utm_source=embed", "autoplay; fullscreen; gamepad"]
+    ];
+    const app = document.getElementById("app");
+    let screen = "hub";
+    let yt = "jNQXAC9IVRw";
+    let gsrc = "https://www.google.com/webhp?igu=1";
+    let display = "0", stored = null, op = null, fresh = true;
+    let picked = null;
+
+    function esc(s) { return String(s).replace(/[&<>"']/g, c => ({ "&":"&","<":"<",">":">",'"':""","'":"&#39;" }[c])); }
+
+    function boot() {
+      if (localStorage.getItem("ixl-seen-boot") === "1") return render();
+      const fact = FACTS[Math.floor(Math.random() * FACTS.length)];
+      app.innerHTML = `<main class="splash"><p class="gold">Booting</p><h1>IXL Games</h1><p class="muted">${esc(fact)}</p><div class="bar"><div></div></div></main>`;
+      setTimeout(() => { localStorage.setItem("ixl-seen-boot", "1"); render(); }, 5000);
+    }
+
+    function shell(title, body) {
+      return `<main class="room"><header class="top"><button class="back" data-go="hub">Back</button><b style="color:#f5c518;font-family:Syne,sans-serif">${esc(title)}</b></header>${body}</main>`;
+    }
+
+    function render() {
+      if (screen === "hub") {
+        app.innerHTML = `<main class="hub"><p class="gold">Arcade hub</p><h1>IXL Games</h1><p class="muted">Open this file in any browser. Install is only on the live app.</p>
+          <nav class="grid">
+            <button class="tile" data-go="games"><b>Games</b><span>Pick one</span></button>
+            <button class="tile" data-go="youtube"><b>YouTube</b><span>Watch a video</span></button>
+            <button class="tile" data-go="google"><b>Google</b><span>Search the web</span></button>
+            <button class="tile" data-go="calc"><b>Calculator</b><span>Real math</span></button>
+          </nav></main>`;
+        return;
+      }
+      if (screen === "games") {
+        if (picked == null) {
+          app.innerHTML = shell("Games", `<div class="list">${GAMES.map((g,i)=>`<button class="game-btn" data-game="${i}">${esc(g[0])}</button>`).join("")}</div>`);
+        } else {
+          const g = GAMES[picked];
+          app.innerHTML = shell(g[0], `<div class="top"><button class="back" data-games="1">All games</button></div><iframe class="frame" title="${esc(g[0])}" src="${esc(g[1])}" allow="${esc(g[2])}" allowfullscreen></iframe>`);
+        }
+        return;
+      }
+      if (screen === "youtube") {
+        app.innerHTML = shell("YouTube", `<form class="row" id="yt"><input id="ytq" placeholder="Paste a YouTube link or video id" /><button class="send">Play</button></form><iframe class="frame" src="https://www.youtube-nocookie.com/embed/${esc(yt)}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>`);
+        document.getElementById("yt").onsubmit = (e) => {
+          e.preventDefault();
+          const raw = document.getElementById("ytq").value.trim();
+          const m = raw.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{6,})/);
+          const next = (m ? m[1] : raw.replace(/[^\w-]/g, ""));
+          if (next.length >= 6) yt = next.slice(0, 20);
+          render();
+        };
+        return;
+      }
+      if (screen === "google") {
+        app.innerHTML = shell("Google", `<form class="row" id="gq"><input id="qq" placeholder="Search Google" /><button class="send">Search</button></form><iframe class="frame" src="${esc(gsrc)}"></iframe>`);
+        document.getElementById("gq").onsubmit = (e) => {
+          e.preventDefault();
+          const q = document.getElementById("qq").value.trim();
+          gsrc = q ? "https://www.google.com/search?igu=1&q=" + encodeURIComponent(q) : "https://www.google.com/webhp?igu=1";
+          render();
+        };
+        return;
+      }
+      if (screen === "calc") {
+        const keys = ["7","8","9","÷","4","5","6","×","1","2","3","-","0",".","=","+"];
+        app.innerHTML = shell("Calculator", `<div class="calc"><div class="screen">${esc(display)}</div><div class="keys">
+          <button data-c="1" style="grid-column:span 2">Clear</button><button data-n="1" style="grid-column:span 2">±</button>
+          ${keys.map(k => `<button data-k="${k}" class="${"÷×-+= ".includes(k)?"op":""}">${k}</button>`).join("")}
+        </div></div>`);
+        return;
+    }
+
+    function round(n) { return Math.round(n * 1e10) / 1e10; }
+    function apply(nextOp) {
+      const n = Number(display);
+      if (stored != null && op && !fresh) {
+        const result = op === "+" ? stored + n : op === "-" ? stored - n : op === "×" ? stored * n : op === "÷" ? (n === 0 ? NaN : stored / n) : n;
+        display = Number.isFinite(result) ? String(round(result)) : "Error";
+        stored = Number.isFinite(result) ? result : null;
+      } else stored = n;
+      op = nextOp; fresh = true;
+    }
+
+    app.addEventListener("click", (e) => {
+      const t = e.target.closest("button");
+      if (!t) return;
+      if (t.dataset.go) { screen = t.dataset.go; picked = null; render(); return; }
+      if (t.dataset.games) { picked = null; render(); return; }
+      if (t.dataset.game != null) { picked = Number(t.dataset.game); render(); return; }
+      if (t.dataset.c) { display = "0"; stored = null; op = null; fresh = true; render(); return; }
+      if (t.dataset.n) { display = display.startsWith("-") ? display.slice(1) : (display === "0" ? display : "-" + display); render(); return; }
+      if (t.dataset.k) {
+        const k = t.dataset.k;
+        if ("÷×-+".includes(k)) apply(k);
+        else if (k === "=") apply(null);
+        else {
+          display = (fresh || display === "0") ? (k === "." ? "0." : k) : (k === "." && display.includes(".") ? display : display + k);
+          fresh = false;
+        }
+        render();
+      }
+    });
+
+    boot();
+  </script>
+</body>
+</html>

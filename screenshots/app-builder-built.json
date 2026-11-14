@@ -1,0 +1,40 @@
+{
+  "url": "http://127.0.0.1:8081/",
+  "viewports": {
+    "desktop": {
+      "width": 1280,
+      "height": 800,
+      "status": 200,
+      "title": "IXL Games",
+      "hasCanvas": false,
+      "bodyTextLen": 85,
+      "bodyTextHash": "5098e899bd8f6d7ce55b4e30d99ae3c5592d91499be4df796d6491e07a910d47",
+      "bodyTextPrefix": "BOOTING IXL Games Honey never spoils. Archaeologists have eaten ",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built.png"
+    },
+    "mobile": {
+      "width": 390,
+      "height": 844,
+      "status": 200,
+      "title": "IXL Games",
+      "hasCanvas": false,
+      "bodyTextLen": 83,
+      "bodyTextHash": "b6b12cf6d2500e91b08ccb7906b81205d9393cf16504e22e4ca8c21cfb8b9ea1",
+      "bodyTextPrefix": "BOOTING IXL Games Octopuses have three hearts, and two of them s",
+      "horizontalOverflow": false,
+      "consoleErrors": [],
+      "pageErrors": [],
+      "screenshot": "/workspace/screenshots/app-builder-built-mobile.png"
+    }
+  },
+  "brandWarnings": [],
+  "authWarnings": [],
+  "verdictFile": "/workspace/screenshots/app-builder-built.json",
+  "divergesFromBaseline": true,
+  "baselineReasons": [
+    "mobile: body text replaced (similar length, page start changed)"
+  ]
+}
